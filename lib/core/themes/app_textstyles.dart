@@ -3,76 +3,100 @@ import 'package:flutter/material.dart';
 sealed class AppTextStyles {
   AppTextStyles._();
 
-  // Font sizes (based on Figma typography system)
-  static const double textXs = 12;
-  static const double textSm = 14;
-  static const double textBase = 16;
-  static const double textLg = 18;
-  static const double textXl = 20;
-  static const double text2xl = 24;
-  static const double text3xl = 30;
-  static const double text4xl = 36;
+  // Asosiy shrift nomini shu yerda kiritib ketishingiz mumkin (masalan, Google Fonts'dan 'Inter' yoki 'Roboto')
+  static const String fontFamily = 'Inter';
 
-  // Weights
-  static const FontWeight light = FontWeight.w300;
-  static const FontWeight normal = FontWeight.w400;
-  static const FontWeight medium = FontWeight.w500;
-  static const FontWeight semibold = FontWeight.w600;
-  static const FontWeight bold = FontWeight.w700;
-
-  // Core styles
-  static const TextStyle body = TextStyle(
-    fontSize: textBase,
-    fontWeight: normal,
-    height: 1.5,
+  // ---------------- DISPLAY (Juda katta sarlavhalar, masalan Onboarding uchun) ----------------
+  static TextStyle get displayLarge => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 57,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.25,
+  );
+  static TextStyle get displayMedium => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 45,
+    fontWeight: FontWeight.w700,
+  );
+  static TextStyle get displaySmall => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 36,
+    fontWeight: FontWeight.w700,
   );
 
-  static const TextStyle bodySm = TextStyle(
-    fontSize: textSm,
-    fontWeight: normal,
-    height: 1.5,
+  // ---------------- HEADLINE (Oyna sarlavhalari uchun) ----------------
+  static TextStyle get headlineLarge => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+  );
+  static TextStyle get headlineMedium => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+  );
+  static TextStyle get headlineSmall => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
   );
 
-  static const TextStyle caption = TextStyle(
-    fontSize: textXs,
-    fontWeight: normal,
-    height: 1.4,
+  // ---------------- TITLE (Card, Dialog yoki List elementlarining sarlavhalari) ----------------
+  static TextStyle get titleLarge => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+  );
+  static TextStyle get titleMedium => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.15,
+  );
+  static TextStyle get titleSmall => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.1,
   );
 
-  static const TextStyle h1 = TextStyle(
-    fontSize: text2xl,
-    fontWeight: medium,
-    height: 1.4,
+  // ---------------- BODY (Asosiy o'qiladigan matnlar, maqolalar, izohlar) ----------------
+  static TextStyle get bodyLarge => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.5,
+  );
+  static TextStyle get bodyMedium => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.25,
+  );
+  static TextStyle get bodySmall => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.4,
   );
 
-  static const TextStyle h2 = TextStyle(
-    fontSize: textXl,
-    fontWeight: medium,
-    height: 1.4,
+  // ---------------- LABEL (Tugmalar ichidagi yozuvlar, juda kichik izohlar) ----------------
+  static TextStyle get labelLarge => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.1,
   );
-
-  static const TextStyle h3 = TextStyle(
-    fontSize: textLg,
-    fontWeight: medium,
-    height: 1.4,
+  static TextStyle get labelMedium => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.5,
   );
-
-  static const TextStyle hero = TextStyle(
-    fontSize: text4xl,
-    fontWeight: bold,
-    height: 1.2,
+  static TextStyle get labelSmall => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.5,
   );
-
-  static TextTheme textTheme(ColorScheme colorScheme) {
-    return TextTheme(
-      displayLarge: hero.copyWith(color: colorScheme.onSurface),
-      headlineLarge: h1.copyWith(color: colorScheme.onSurface),
-      headlineMedium: h2.copyWith(color: colorScheme.onSurface),
-      headlineSmall: h3.copyWith(color: colorScheme.onSurface),
-      bodyLarge: body.copyWith(color: colorScheme.onSurface),
-      bodyMedium: bodySm.copyWith(color: colorScheme.onSurface),
-      bodySmall: caption.copyWith(color: colorScheme.onSurfaceVariant),
-      labelLarge: body.copyWith(color: colorScheme.onPrimary),
-    );
-  }
 }

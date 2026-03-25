@@ -1,9 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:sayyor/core/di/service_locator.dart' as di;
-import 'package:sayyor/core/routes/app_router.dart';
-import 'package:sayyor/core/storage/token_storage.dart';
-import 'package:sayyor/core/themes/app_textstyles.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+import 'package:sayyor/core/storage/localstorage.dart';
+import 'package:sayyor/core/themes/app_themes.dart';
+import 'package:sayyor/features/others/screen/splash.dart';
+import 'package:sayyor/features/profile/presentation/bloc/theme/state.dart';
+
+import 'core/di/service_locator.dart';
 
 class SayyorApp extends StatefulWidget {
   const SayyorApp({super.key});
@@ -15,21 +20,23 @@ class SayyorApp extends StatefulWidget {
 class _SayyorAppState extends State<SayyorApp> {
   @override
   Widget build(BuildContext context) {
-    final tokenStorage = di.sl<TokenStorage>();
-    final router = AppRouter.createRouter(tokenStorage);
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.deepOrange,
-      brightness: Brightness.light,
-    );
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
-      locale: context.locale,
-      supportedLocales: context.supportedLocales,
-      localizationsDelegates: context.localizationDelegates,
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        textTheme: AppTextStyles.textTheme(colorScheme),
+    return BlocProvider(
+      create: (context) => ThemeCubit(sl<LocalStorage>()),
+      child: ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, child) {
+          return BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                theme: AppThemes.lightTheme,
+                darkTheme: AppThemes.darkTheme,
+                themeMode: themeMode,
+                home: const SplashScreen(),
+              );
+            },
+          );
+        },
       ),
     );
   }

@@ -1,11 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:sayyor/core/networks/dio_client.dart';
-import 'package:sayyor/core/storage/token_storage.dart';
 import 'package:sayyor/core/utils/constants.dart';
 import 'package:sayyor/features/authentification/data/model/auth_model.dart';
 import 'package:sayyor/features/authentification/data/model/refresh_token_model.dart';
 import 'package:sayyor/features/authentification/data/model/send_otp_model.dart';
-import 'package:sayyor/features/authentification/domain/entities/auth_entity.dart';
 
 import '../../../../core/errors/exception.dart';
 
