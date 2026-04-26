@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
 import 'package:sayyor/core/di/service_locator.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/storage/localstorage.dart';
 import 'package:sayyor/core/storage/token_storage.dart';
-import 'package:sayyor/core/themes/app_sizes.dart';
 import 'package:sayyor/core/themes/app_colors.dart';
+import 'package:sayyor/core/themes/app_sizes.dart';
+import 'package:sayyor/core/widgets/app_async_state_view.dart';
+import 'package:sayyor/features/profile/data/profile_mock_repository.dart';
+import 'package:sayyor/features/profile/presentation/screen/my_orders_screen.dart';
 import 'package:sayyor/features/others/screen/selection_user.dart';
+import 'package:sayyor/features/profile/presentation/bloc/locale/state.dart';
 import 'package:sayyor/features/profile/presentation/bloc/theme/state.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,9 +22,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _currentLanguage = "O'zbekcha";
   late final bool _isMasterMode;
   bool _isAvailableForJobs = true;
+  late Future<ProfileMockData> _profileFuture;
+  String? _loadedLocaleKey;
+
+  final ProfileMockRepository _repository = sl<ProfileMockRepository>();
 
   @override
   void initState() {
@@ -29,12 +36,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final localeKey = Localizations.localeOf(context).toLanguageTag();
+    if (_loadedLocaleKey != localeKey) {
+      _loadedLocaleKey = localeKey;
+      _profileFuture = _repository.loadProfile(AppLocalizations.of(context));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = context.watch<ThemeCubit>().state == ThemeMode.dark;
+    final currentLocale = context.watch<LocaleCubit>().state;
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Profil", style: theme.textTheme.headlineSmall),
+        title: Text(l10n.profileTitle, style: theme.textTheme.headlineSmall),
         centerTitle: false,
         actions: [
           IconButton(
@@ -46,88 +66,120 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: AppSizes.padding16,
-        child: Column(
-          children: [
-            _buildProfileHeader(theme),
-            AppSizes.gH24,
+      body: FutureBuilder<ProfileMockData>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return AppAsyncStateView.loading(l10n);
+          }
 
-            _buildMenuGroup(
-              theme: theme,
-              title: "Asosiy",
-              children: [
-                _buildMenuItem(
-                  theme: theme,
-                  icon: Icons.assignment_outlined,
-                  title: "Mening buyurtmalarim",
-                  onTap: () {},
-                ),
-                _buildDivider(theme),
-                _buildMenuItem(
-                  theme: theme,
-                  icon: Icons.favorite_border_rounded,
-                  title: "Saqlangan ustalar",
-                  onTap: () {},
-                ),
-                _buildDivider(theme),
-                _buildMenuItem(
-                  theme: theme,
-                  icon: Icons.account_balance_wallet_outlined,
-                  title: "To'lov usullari",
-                  onTap: () {},
-                ),
-              ],
-            ),
-            AppSizes.gH24,
+          if (snapshot.hasError) {
+            return AppAsyncStateView.error(
+              l10n: l10n,
+              subtitle: l10n.stateErrorSubtitle,
+              onRetry: () {
+                setState(() {
+                  _loadedLocaleKey = null;
+                });
+                didChangeDependencies();
+              },
+            );
+          }
 
-            _buildMenuGroup(
-              theme: theme,
-              title: "Sozlamalar",
+          final profile = snapshot.data;
+          if (profile == null) {
+            return AppAsyncStateView.empty(
+              l10n: l10n,
+              subtitle: l10n.stateEmptySubtitle,
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: AppSizes.padding16,
+            child: Column(
               children: [
-                if (_isMasterMode) ...[
-                  _buildMenuItem(
-                    theme: theme,
-                    icon: Icons.work_outline_rounded,
-                    title: "Band holati",
-                    trailing: Switch(
-                      value: _isAvailableForJobs,
-                      activeColor: theme.colorScheme.primary,
-                      onChanged: (value) {
-                        setState(() {
-                          _isAvailableForJobs = value;
-                        });
+                _buildProfileHeader(theme, l10n, profile),
+                AppSizes.gH24,
+                _buildMenuGroup(
+                  theme: theme,
+                  title: l10n.profileSectionMainTitle,
+                  children: [
+                    _buildMenuItem(
+                      theme: theme,
+                      icon: Icons.assignment_outlined,
+                      title: l10n.profileOrdersTitle,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyOrdersScreen(),
+                          ),
+                        );
                       },
                     ),
-                    onTap: () {
-                      setState(() {
-                        _isAvailableForJobs = !_isAvailableForJobs;
-                      });
-                    },
-                  ),
-                  _buildDivider(theme),
-                ],
-                _buildMenuItem(
-                  theme: theme,
-                  icon: Icons.language,
-                  title: "Tizim tili",
-                  trailing: Text(
-                    _currentLanguage,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
+                    _buildDivider(theme),
+                    _buildMenuItem(
+                      theme: theme,
+                      icon: Icons.favorite_border_rounded,
+                      title: l10n.profileSavedMastersTitle,
+                      onTap: () {},
                     ),
-                  ),
-                  onTap: () {},
+                    _buildDivider(theme),
+                    _buildMenuItem(
+                      theme: theme,
+                      icon: Icons.account_balance_wallet_outlined,
+                      title: l10n.profilePaymentMethodsTitle,
+                      onTap: () {},
+                    ),
+                  ],
                 ),
-                _buildDivider(theme),
-                BlocBuilder<ThemeCubit, ThemeMode>(
-                  builder: (context, themeMode) {
-                    return _buildMenuItem(
+                AppSizes.gH24,
+                _buildMenuGroup(
+                  theme: theme,
+                  title: l10n.profileSectionSettingsTitle,
+                  children: [
+                    if (_isMasterMode) ...[
+                      _buildMenuItem(
+                        theme: theme,
+                        icon: Icons.work_outline_rounded,
+                        title: l10n.profileAvailabilityTitle,
+                        trailing: Switch(
+                          value: _isAvailableForJobs,
+                          activeThumbColor: theme.colorScheme.primary,
+                          onChanged: (value) {
+                            setState(() {
+                              _isAvailableForJobs = value;
+                            });
+                          },
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _isAvailableForJobs = !_isAvailableForJobs;
+                          });
+                        },
+                      ),
+                      _buildDivider(theme),
+                    ],
+                    _buildMenuItem(
+                      theme: theme,
+                      icon: Icons.language,
+                      title: l10n.systemLanguage,
+                      trailing: Text(
+                        _languageLabel(l10n, currentLocale),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      onTap: () => _showLanguageSelector(context),
+                    ),
+                    _buildDivider(theme),
+                    _buildMenuItem(
                       theme: theme,
                       icon: Icons.dark_mode_outlined,
-                      title: "Tungi rejim",
+                      title: l10n.profileThemeTitle,
                       trailing: Switch(
                         value: isDarkMode,
+                        activeThumbColor: theme.colorScheme.primary,
                         onChanged: (value) {
                           context.read<ThemeCubit>().setMode(
                             value ? ThemeMode.dark : ThemeMode.light,
@@ -142,79 +194,159 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               : ThemeMode.dark,
                         );
                       },
-                    );
-                  },
-                ),
-              ],
-            ),
-            AppSizes.gH24,
-
-            _buildMenuGroup(
-              theme: theme,
-              title: "Qo'shimcha",
-              children: [
-                _buildMenuItem(
-                  theme: theme,
-                  icon: Icons.help_outline_rounded,
-                  title: "Qo'llab-quvvatlash markazi",
-                  onTap: () {},
-                ),
-                _buildDivider(theme),
-                _buildMenuItem(
-                  theme: theme,
-                  icon: Icons.privacy_tip_outlined,
-                  title: "Maxfiylik siyosati va shartlar",
-                  onTap: () {},
-                ),
-              ],
-            ),
-            AppSizes.gH24,
-
-            Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: AppSizes.borderRadius16,
-                border: Border.all(color: AppColors.kError.withOpacity(0.3)),
-              ),
-              child: _buildMenuItem(
-                theme: theme,
-                icon: Icons.logout_rounded,
-                title: "Tizimdan chiqish",
-                iconColor: AppColors.kError,
-                textColor: AppColors.kError,
-                showArrow: false,
-
-                onTap: () async {
-                  await sl<TokenStorage>().clear();
-                  await sl<LocalStorage>().clearUserSelection();
-                  if (!mounted) return;
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const RoleSelectionScreen(),
                     ),
-                    (route) => false,
-                  );
-                },
-              ),
+                  ],
+                ),
+                AppSizes.gH24,
+                _buildMenuGroup(
+                  theme: theme,
+                  title: l10n.profileSectionAdditionalTitle,
+                  children: [
+                    _buildMenuItem(
+                      theme: theme,
+                      icon: Icons.help_outline_rounded,
+                      title: l10n.profileSupportTitle,
+                      onTap: () {},
+                    ),
+                    _buildDivider(theme),
+                    _buildMenuItem(
+                      theme: theme,
+                      icon: Icons.privacy_tip_outlined,
+                      title: l10n.profilePrivacyTitle,
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+                AppSizes.gH24,
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: AppSizes.borderRadius16,
+                    border: Border.all(
+                      color: AppColors.kError.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: _buildMenuItem(
+                    theme: theme,
+                    icon: Icons.logout_rounded,
+                    title: l10n.profileLogoutTitle,
+                    iconColor: AppColors.kError,
+                    textColor: AppColors.kError,
+                    showArrow: false,
+                    onTap: () async {
+                      final navigator = Navigator.of(context);
+                      await sl<TokenStorage>().clear();
+                      await sl<LocalStorage>().clearUserSelection();
+                      if (!mounted) return;
+                      navigator.pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const RoleSelectionScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                  ),
+                ),
+                AppSizes.gH32,
+                Text(
+                  profile.version,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+                AppSizes.gH24,
+              ],
             ),
-
-            AppSizes.gH32,
-
-            Text(
-              "Sayyor App v1.0.0",
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.outline,
-              ),
-            ),
-            AppSizes.gH24,
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProfileHeader(ThemeData theme) {
+  String _languageLabel(AppLocalizations l10n, Locale? locale) {
+    switch (locale?.languageCode) {
+      case 'en':
+        return l10n.languageEnglish;
+      case 'ru':
+        return l10n.languageRussian;
+      case 'uz':
+        return l10n.languageUzbek;
+      default:
+        return l10n.languageSystem;
+    }
+  }
+
+  void _showLanguageSelector(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final localeCubit = context.read<LocaleCubit>();
+    final currentLocale = localeCubit.state;
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final sheetTheme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: Text(l10n.languageSystem),
+                trailing: currentLocale == null
+                    ? Icon(Icons.check, color: sheetTheme.colorScheme.primary)
+                    : null,
+                onTap: () {
+                  localeCubit.setLocale(null);
+                  Navigator.pop(sheetContext);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(l10n.languageEnglish),
+                trailing: currentLocale?.languageCode == 'en'
+                    ? Icon(Icons.check, color: sheetTheme.colorScheme.primary)
+                    : null,
+                onTap: () {
+                  localeCubit.setLocale(const Locale('en'));
+                  Navigator.pop(sheetContext);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(l10n.languageRussian),
+                trailing: currentLocale?.languageCode == 'ru'
+                    ? Icon(Icons.check, color: sheetTheme.colorScheme.primary)
+                    : null,
+                onTap: () {
+                  localeCubit.setLocale(const Locale('ru'));
+                  Navigator.pop(sheetContext);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(l10n.languageUzbek),
+                trailing: currentLocale?.languageCode == 'uz'
+                    ? Icon(Icons.check, color: sheetTheme.colorScheme.primary)
+                    : null,
+                onTap: () {
+                  localeCubit.setLocale(const Locale('uz'));
+                  Navigator.pop(sheetContext);
+                },
+              ),
+              AppSizes.gH16,
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileHeader(
+    ThemeData theme,
+    AppLocalizations l10n,
+    ProfileMockData profile,
+  ) {
     return Column(
       children: [
         Center(
@@ -223,20 +355,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 width: 100.w,
                 height: 100.w,
-
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: theme.colorScheme.primary,
                     width: 2.w,
                   ),
-                  image: const DecorationImage(
-                    image: NetworkImage("https:"),
+                  image: DecorationImage(
+                    image: NetworkImage(profile.avatarUrl),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-
               Positioned(
                 bottom: 0,
                 right: 0,
@@ -261,26 +391,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         AppSizes.gH16,
-
         Text(
-          "Toshmat Eshmatov",
+          profile.name,
           style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         AppSizes.gH4,
         Text(
-          "+998 90 123 45 67",
+          profile.phone,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.outline,
           ),
         ),
         AppSizes.gH16,
-
         ElevatedButton.icon(
           onPressed: () {},
           icon: Icon(Icons.edit_outlined, size: 18.sp),
-          label: const Text("Profilni tahrirlash"),
+          label: Text(l10n.profileEditButton),
           style: ElevatedButton.styleFrom(
             backgroundColor: theme.colorScheme.primaryContainer,
             foregroundColor: theme.colorScheme.onPrimaryContainer,
@@ -316,13 +444,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: AppSizes.borderRadius16,
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.shadow.withOpacity(0.03),
+                color: theme.colorScheme.shadow.withValues(alpha: 0.03),
                 blurRadius: 10.r,
                 offset: Offset(0, 4.h),
               ),
             ],
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
+              color: theme.colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: Column(children: children),
@@ -369,7 +497,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (trailing == null && showArrow)
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 size: 16.sp,
               ),
           ],
@@ -383,8 +511,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: 1,
       thickness: 1,
       indent: 56.w,
-
-      color: theme.colorScheme.outline.withOpacity(0.15),
+      color: theme.colorScheme.outline.withValues(alpha: 0.15),
     );
   }
 }

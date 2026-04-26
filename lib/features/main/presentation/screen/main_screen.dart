@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/di/service_locator.dart';
 import 'package:sayyor/core/storage/localstorage.dart';
 import 'package:sayyor/features/ads_manager/banner_widget.dart';
@@ -38,6 +39,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: _pages[_selectedIndex],
@@ -60,28 +62,30 @@ class _MainScreenState extends State<MainScreen> {
               NavigationDestination(
                 icon: Icon(Icons.home_outlined),
                 selectedIcon: Icon(Icons.home),
-                label: 'Asosiy',
+                label: l10n.navHome,
               ),
               NavigationDestination(
                 icon: Icon(Icons.search_outlined),
                 selectedIcon: Icon(Icons.search),
-                label: 'Qidiruv',
+                label: l10n.navSearch,
               ),
               // YANGI: O'rtadagi E'lon berish tugmasi
               NavigationDestination(
                 icon: Icon(Icons.add_circle_outline),
                 selectedIcon: Icon(Icons.add_circle),
-                label: _isMaster ? 'Portfolio' : "E'lon",
+                label: _isMaster
+                    ? l10n.navCreateRequestMaster
+                    : l10n.navCreateRequestClient,
               ),
               NavigationDestination(
                 icon: Icon(Icons.chat_bubble_outline),
                 selectedIcon: Icon(Icons.chat_bubble),
-                label: 'Chat',
+                label: l10n.navChat,
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline),
                 selectedIcon: Icon(Icons.person),
-                label: 'Profil',
+                label: l10n.navProfile,
               ),
             ],
           ),

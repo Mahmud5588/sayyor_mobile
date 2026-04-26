@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/themes/app_sizes.dart';
 
 class MasterCardWidget extends StatelessWidget {
@@ -31,6 +32,7 @@ class MasterCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return InkWell(
       onTap: onTap,
@@ -46,13 +48,13 @@ class MasterCardWidget extends StatelessWidget {
           borderRadius: AppSizes.borderRadius16,
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.shadow.withOpacity(0.05),
+              color: theme.colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 10.r,
               offset: Offset(0, 4.h),
             ),
           ],
           border: AppSizes.borderAll(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
         ),
         child: Row(
@@ -68,7 +70,7 @@ class MasterCardWidget extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) => Container(
                   width: 80.w,
                   height: 80.h,
-                  color: theme.colorScheme.surfaceVariant,
+                  color: theme.colorScheme.surfaceContainerHighest,
                   child: Icon(
                     Icons.person,
                     color: theme.colorScheme.onSurfaceVariant,
@@ -117,12 +119,12 @@ class MasterCardWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isBusy
-                          ? Colors.red.withOpacity(0.12)
-                          : Colors.green.withOpacity(0.14),
+                          ? Colors.red.withValues(alpha: 0.12)
+                          : Colors.green.withValues(alpha: 0.14),
                       borderRadius: AppSizes.borderRadius8,
                     ),
                     child: Text(
-                      isBusy ? "Band" : "Band emas",
+                      isBusy ? l10n.homeMasterBusy : l10n.homeMasterFree,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: isBusy ? Colors.red : Colors.green,
                         fontWeight: FontWeight.w700,
@@ -134,7 +136,7 @@ class MasterCardWidget extends StatelessWidget {
                   Text(
                     profession,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                   AppSizes.gH4,

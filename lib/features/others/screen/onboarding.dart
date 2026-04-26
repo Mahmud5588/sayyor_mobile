@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/themes/app_sizes.dart';
-import 'package:sayyor/core/themes/app_colors.dart';
 import 'package:sayyor/features/others/screen/selection_user.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-// --- ONBOARDING MODELI ---
 class OnboardingContent {
   final String title;
   final String description;
@@ -29,31 +28,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // --- SAHIFALAR MA'LUMOTI ---
-  final List<OnboardingContent> _contents = [
-    OnboardingContent(
-      title: "Izlagan ustangizni oson toping",
-      description:
-          "Yuzlab malakali ustalar, santexniklar va elektriklar endi bitta ilovada. O'zingizga qulay vaqtda xizmat buyurtma qiling.",
-      imageUrl:
-          "https://img.freepik.com/free-vector/home-repair-concept-illustration_114360-4235.jpg", // Test illyustratsiya
-    ),
-    OnboardingContent(
-      title: "Sifatli va ishonchli xizmat",
-      description:
-          "Barcha ustalarimiz tekshiruvdan o'tgan va mijozlar tomonidan baholangan. Sifatga kafolat beramiz.",
-      imageUrl:
-          "https://img.freepik.com/free-vector/building-concept-illustration_114360-3243.jpg", // Test illyustratsiya
-    ),
-    OnboardingContent(
-      title: "Vaqt va pulingizni tejang",
-      description:
-          "Oldindan kelishilgan narxlar va tezkor xizmat. Usta qidirishga vaqt sarflamang, biz sizga eng yaxshilarini topamiz.",
-      imageUrl:
-          "https://img.freepik.com/free-vector/time-management-concept-illustration_114360-1013.jpg", // Test illyustratsiya
-    ),
-  ];
-
   @override
   void dispose() {
     _pageController.dispose();
@@ -61,7 +35,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onNext() {
-    if (_currentPage == _contents.length - 1) {
+    final contents = _contents(context);
+    if (_currentPage == contents.length - 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
@@ -84,20 +59,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isLastPage = _currentPage == _contents.length - 1;
+    final l10n = AppLocalizations.of(context);
+    final contents = _contents(context);
+    final isLastPage = _currentPage == contents.length - 1;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // 1. O'TKAZIB YUBORISH (SKIP) TUGMASI
             Align(
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: _onSkip,
                 child: Text(
-                  "O'tkazib yuborish",
+                  l10n.onboardingSkip,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.outline,
                     fontWeight: FontWeight.w600,
@@ -115,12 +91,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     _currentPage = index;
                   });
                 },
-                itemCount: _contents.length,
+                itemCount: contents.length,
                 itemBuilder: (context, index) {
                   return AnimatedBuilder(
                     animation: _pageController,
                     builder: (context, child) {
-                      // Kichik miqyosli (Scale) animatsiya sahifa o'zgarayotganda
                       double value = 1.0;
                       if (_pageController.position.haveDimensions) {
                         value = _pageController.page! - index;
@@ -128,13 +103,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       }
                       return Transform.scale(scale: value, child: child);
                     },
-                    child: _buildPageContent(theme, _contents[index]),
+                    child: _buildPageContent(theme, contents[index]),
                   );
                 },
               ),
             ),
 
-            // 3. PASTKI QISM (Indicator va Button)
             Padding(
               padding: AppSizes.padding24,
               child: Row(
@@ -143,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   // Smooth Page Indicator
                   SmoothPageIndicator(
                     controller: _pageController,
-                    count: _contents.length,
+                    count: contents.length,
                     effect: ExpandingDotsEffect(
                       activeDotColor: theme.colorScheme.primary,
                       dotColor: theme.colorScheme.primaryContainer,
@@ -172,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       child: isLastPage
                           ? Text(
-                              "Boshlash",
+                              l10n.onboardingStart,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: theme.colorScheme.onPrimary,
                                 fontWeight: FontWeight.bold,
@@ -193,6 +167,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       ),
     );
+  }
+
+  List<OnboardingContent> _contents(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return [
+      OnboardingContent(
+        title: l10n.onboarding1Title,
+        description: l10n.onboarding1Description,
+        imageUrl:
+            'https://img.freepik.com/free-vector/home-repair-concept-illustration_114360-4235.jpg',
+      ),
+      OnboardingContent(
+        title: l10n.onboarding2Title,
+        description: l10n.onboarding2Description,
+        imageUrl:
+            'https://img.freepik.com/free-vector/building-concept-illustration_114360-3243.jpg',
+      ),
+      OnboardingContent(
+        title: l10n.onboarding3Title,
+        description: l10n.onboarding3Description,
+        imageUrl:
+            'https://img.freepik.com/free-vector/time-management-concept-illustration_114360-1013.jpg',
+      ),
+    ];
   }
 
   // --- HAR BIR SAHIFA UCHUN KONTENT ---
@@ -245,7 +244,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Text(
                   content.description,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,

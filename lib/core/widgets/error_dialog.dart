@@ -1,43 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
-
-
-
+import 'package:sayyor/core/l10n/app_localizations.dart';
 
 class AppErrorDialog {
-  
-  
-  
-  
-  
   static void show(BuildContext context, String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        
-        icon: const Icon(Icons.error_outline, color: Colors.red, size: 48),
-
-        
-        title: Text('error_title'.tr()),
-
-        
-        content: Text(message, textAlign: TextAlign.center),
-
-        
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('ok'.tr()),
-          ),
-        ],
-      ),
+      builder: (dialogContext) {
+        final l10n = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          icon: const Icon(Icons.error_outline, color: Colors.red, size: 48),
+          title: Text(l10n.errorTitle),
+          content: Text(message, textAlign: TextAlign.center),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.okButton),
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-
 class AppSnackBar {
-  
   static void showSuccess(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -55,7 +41,6 @@ class AppSnackBar {
     );
   }
 
-  
   static void showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -73,7 +58,6 @@ class AppSnackBar {
     );
   }
 
-  
   static void showInfo(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

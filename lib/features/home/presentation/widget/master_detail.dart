@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 
 import '../../../../core/themes/app_sizes.dart';
 
@@ -40,7 +41,6 @@ class MasterDetailModel {
   });
 }
 
-
 class MasterDetailScreen extends StatelessWidget {
   final MasterDetailModel master;
 
@@ -49,26 +49,31 @@ class MasterDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      // Orqaga qaytish va ulashish (Share) tugmalari bilan AppBar
       appBar: AppBar(
-        title: Text("Usta profili", style: theme.textTheme.titleLarge),
+        title: Text(
+          l10n.homeMasterAppBarTitle,
+          style: theme.textTheme.titleLarge,
+        ),
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {}, // Ulashish funksiyasi
+            onPressed: () {},
             icon: Icon(Icons.share_outlined, color: theme.colorScheme.primary),
           ),
           IconButton(
-            onPressed: () {}, // Saqlanganlarga (Yoqtirganlarga) qo'shish
-            icon: Icon(Icons.favorite_border_rounded, color: theme.colorScheme.primary),
+            onPressed: () {},
+            icon: Icon(
+              Icons.favorite_border_rounded,
+              color: theme.colorScheme.primary,
+            ),
           ),
         ],
       ),
 
-      // Asosiy qism va eng pastda "Xabar yozish" tugmasi
       body: Column(
         children: [
           Expanded(
@@ -77,42 +82,38 @@ class MasterDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. TEPADAGI ASOSIY MA'LUMOT (Avatar, Ism, Kasb, Yosh, Tajriba)
-                  _buildHeaderSection(theme),
+                  _buildHeaderSection(theme, l10n),
                   AppSizes.gH24,
 
-                  // 2. STATISTIKA (Reyting, Buyurtmalar)
-                  _buildStatsRow(theme),
+                  _buildStatsRow(theme, l10n),
                   AppSizes.gH24,
 
-                  // 3. O'ZI HAQIDA VA NARX
-                  _buildAboutAndPriceSection(theme),
+                  _buildAboutAndPriceSection(theme, l10n),
                   AppSizes.gH24,
 
-                  // 4. QILINGAN ISHLAR (PORTFEL) - Ketma-ket rasm va matn
-                  Text("Bajarilgan ishlar", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    l10n.homeMasterPortfolioTitle,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   AppSizes.gH12,
-                  _buildPortfolioSection(theme),
+                  _buildPortfolioSection(theme, l10n),
                 ],
               ),
             ),
           ),
 
-          // 5. PASTKI QAT'IY (FIXED) TUGMA - Doim ko'rinib turadi
-          _buildBottomActionButton(context, theme),
+          _buildBottomActionButton(context, theme, l10n),
         ],
       ),
     );
   }
 
-  // --- WIDGET QURUVCHILAR ---
-
-  // 1. Asosiy Header (Rasm va Ism)
-  Widget _buildHeaderSection(ThemeData theme) {
+  Widget _buildHeaderSection(ThemeData theme, AppLocalizations l10n) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar
         ClipRRect(
           borderRadius: AppSizes.borderRadius16,
           child: Image.network(
@@ -123,48 +124,67 @@ class MasterDetailScreen extends StatelessWidget {
             errorBuilder: (c, e, s) => Container(
               width: 100.w,
               height: 100.w,
-              color: theme.colorScheme.surfaceVariant,
-              child: Icon(Icons.person, size: 40.sp, color: theme.colorScheme.outline),
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Icon(
+                Icons.person,
+                size: 40.sp,
+                color: theme.colorScheme.outline,
+              ),
             ),
           ),
         ),
         AppSizes.gW16,
 
-        // Ma'lumotlar
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 master.name,
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               AppSizes.gH4,
               Text(
                 master.profession,
-                style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
               ),
               AppSizes.gH8,
 
-              // Yosh va Tajriba chiplari
               Row(
                 children: [
-                  _buildSmallChip(theme, Icons.cake_outlined, "${master.age} yosh"),
+                  _buildSmallChip(
+                    theme,
+                    Icons.cake_outlined,
+                    '${master.age} ${l10n.homeMasterAgeSuffix}',
+                  ),
                   AppSizes.gW8,
-                  _buildSmallChip(theme, Icons.work_history_outlined, "${master.experienceYears} yil tajriba"),
+                  _buildSmallChip(
+                    theme,
+                    Icons.work_history_outlined,
+                    '${master.experienceYears} ${l10n.homeMasterExperienceSuffix}',
+                  ),
                 ],
               ),
               AppSizes.gH8,
 
-              // Lokatsiya
               Row(
                 children: [
-                  Icon(Icons.location_on_outlined, size: 16.sp, color: theme.colorScheme.outline),
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 16.sp,
+                    color: theme.colorScheme.outline,
+                  ),
                   AppSizes.gW4,
                   Expanded(
                     child: Text(
                       master.location,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -178,12 +198,14 @@ class MasterDetailScreen extends StatelessWidget {
     );
   }
 
-  // Kichik ma'lumot chiplari (Yosh, Tajriba)
   Widget _buildSmallChip(ThemeData theme, IconData icon, String text) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSizes.w8, vertical: AppSizes.h4),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSizes.w8,
+        vertical: AppSizes.h4,
+      ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant?.withOpacity(0.5),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: AppSizes.borderRadius8,
       ),
       child: Row(
@@ -191,33 +213,57 @@ class MasterDetailScreen extends StatelessWidget {
         children: [
           Icon(icon, size: 14.sp, color: theme.colorScheme.onSurfaceVariant),
           AppSizes.gW4,
-          Text(text, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+          Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // 2. Statistika (Reyting, Buyurtmalar soni)
-  Widget _buildStatsRow(ThemeData theme) {
+  Widget _buildStatsRow(ThemeData theme, AppLocalizations l10n) {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard(theme, Icons.star_rounded, Colors.amber, master.rating.toString(), "Reyting"),
+          child: _buildStatCard(
+            theme,
+            Icons.star_rounded,
+            Colors.amber,
+            master.rating.toString(),
+            l10n.homeMasterRatingLabel,
+          ),
         ),
         AppSizes.gW12,
         Expanded(
-          child: _buildStatCard(theme, Icons.task_alt_rounded, theme.colorScheme.primary, master.completedJobs.toString(), "Bajarilgan ishlar"),
+          child: _buildStatCard(
+            theme,
+            Icons.task_alt_rounded,
+            theme.colorScheme.primary,
+            master.completedJobs.toString(),
+            l10n.homeMasterCompletedJobsLabel,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(ThemeData theme, IconData icon, Color iconColor, String value, String label) {
+  Widget _buildStatCard(
+    ThemeData theme,
+    IconData icon,
+    Color iconColor,
+    String value,
+    String label,
+  ) {
     return Container(
       padding: AppSizes.padding12,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        border: AppSizes.borderAll(color: theme.colorScheme.outline.withOpacity(0.2)),
+        border: AppSizes.borderAll(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        ),
         borderRadius: AppSizes.borderRadius16,
       ),
       child: Column(
@@ -227,40 +273,60 @@ class MasterDetailScreen extends StatelessWidget {
             children: [
               Icon(icon, color: iconColor, size: 20.sp),
               AppSizes.gW4,
-              Text(value, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           AppSizes.gH4,
-          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline)),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.outline,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // 3. O'zi haqida va Narx oralig'i
-  Widget _buildAboutAndPriceSection(ThemeData theme) {
+  Widget _buildAboutAndPriceSection(ThemeData theme, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Narx bloki
         Container(
           width: double.infinity,
           padding: AppSizes.padding16,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
             borderRadius: AppSizes.borderRadius12,
           ),
           child: Row(
             children: [
-              Icon(Icons.payments_outlined, color: theme.colorScheme.primary, size: 24.sp),
+              Icon(
+                Icons.payments_outlined,
+                color: theme.colorScheme.primary,
+                size: 24.sp,
+              ),
               AppSizes.gW12,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Xizmat narxi (Taxminiy)", style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onPrimaryContainer)),
+                  Text(
+                    l10n.homeMasterPriceLabel,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
                   Text(
                     master.priceRange,
-                    style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -269,25 +335,35 @@ class MasterDetailScreen extends StatelessWidget {
         ),
         AppSizes.gH16,
 
-        // O'zi haqida
-        Text("Mutaxassis haqida", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          l10n.homeMasterAboutTitle,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         AppSizes.gH8,
         Text(
           master.about,
-          style: theme.textTheme.bodyMedium?.copyWith(height: 1.5, color: theme.colorScheme.onSurface.withOpacity(0.8)),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            height: 1.5,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+          ),
         ),
       ],
     );
   }
 
-  // 4. Portfel (Qilingan ishlar ro'yxati)
-  Widget _buildPortfolioSection(ThemeData theme) {
+  Widget _buildPortfolioSection(ThemeData theme, AppLocalizations l10n) {
     if (master.portfolio.isEmpty) {
-      return Text("Hozircha portfelga ishlar joylanmagan.", style: theme.textTheme.bodyMedium);
+      return Text(
+        l10n.homeMasterPortfolioEmpty,
+        style: theme.textTheme.bodyMedium,
+      );
     }
 
     return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(), // Tashqi scroll ishlashi uchun buni o'chirib qo'yamiz
+      physics:
+          const NeverScrollableScrollPhysics(), // Tashqi scroll ishlashi uchun buni o'chirib qo'yamiz
       shrinkWrap: true, // Ro'yxat o'ziga kerakli joyni olishi uchun
       itemCount: master.portfolio.length,
       separatorBuilder: (context, index) => AppSizes.gH16,
@@ -297,10 +373,12 @@ class MasterDetailScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: AppSizes.borderRadius16,
-            border: AppSizes.borderAll(color: theme.colorScheme.outline.withOpacity(0.2)),
+            border: AppSizes.borderAll(
+              color: theme.colorScheme.outline.withValues(alpha: 0.2),
+            ),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.shadow.withOpacity(0.03),
+                color: theme.colorScheme.shadow.withValues(alpha: 0.03),
                 blurRadius: 10.r,
                 offset: Offset(0, 4.h),
               ),
@@ -309,7 +387,6 @@ class MasterDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Rasm qismi
               ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
                 child: Image.network(
@@ -319,7 +396,7 @@ class MasterDetailScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              // Ta'rif qismi
+
               Padding(
                 padding: AppSizes.padding16,
                 child: Text(
@@ -334,15 +411,18 @@ class MasterDetailScreen extends StatelessWidget {
     );
   }
 
-  // 5. Pastki "Chat" tugmasi
-  Widget _buildBottomActionButton(BuildContext context, ThemeData theme) {
+  Widget _buildBottomActionButton(
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: EdgeInsets.all(AppSizes.w16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.1),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.1),
             blurRadius: 10.r,
             offset: Offset(0, -4.h), // Tepaga qarab soya
           ),
@@ -352,11 +432,9 @@ class MasterDetailScreen extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: ChatDetailScreen ga o'tish
-            },
+            onPressed: () {},
             icon: Icon(Icons.chat_bubble_outline, size: 24.sp),
-            label: const Text("Xabar yozish"),
+            label: Text(l10n.homeMasterChatButton),
           ),
         ),
       ),

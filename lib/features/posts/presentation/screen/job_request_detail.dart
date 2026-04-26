@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/themes/app_sizes.dart';
 
 class JobRequestDetailScreen extends StatelessWidget {
@@ -23,9 +24,10 @@ class JobRequestDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ish tafsiloti')),
+      appBar: AppBar(title: Text(l10n.homeRequestDetailTitle)),
       body: Column(
         children: [
           Expanded(
@@ -52,7 +54,7 @@ class JobRequestDetailScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Buyurtmachi',
+                              l10n.homeRequestCustomerLabel,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.outline,
                               ),
@@ -73,8 +75,8 @@ class JobRequestDetailScreen extends StatelessWidget {
                   Container(
                     padding: AppSizes.padding12,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(
-                        0.35,
+                      color: theme.colorScheme.primaryContainer.withValues(
+                        alpha: 0.35,
                       ),
                       borderRadius: AppSizes.borderRadius12,
                     ),
@@ -94,7 +96,7 @@ class JobRequestDetailScreen extends StatelessWidget {
                   AppSizes.gH20,
                   if (images.isNotEmpty) ...[
                     Text(
-                      'Rasmlar',
+                      l10n.homeRequestImagesTitle,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -134,7 +136,7 @@ class JobRequestDetailScreen extends StatelessWidget {
                     _showBidBottomSheet(context, theme);
                   },
                   icon: Icon(Icons.local_offer_outlined, size: 20.sp),
-                  label: const Text('Taklif yuborish'),
+                  label: Text(l10n.homeRequestBidButton),
                 ),
               ),
             ),
@@ -145,6 +147,7 @@ class JobRequestDetailScreen extends StatelessWidget {
   }
 
   void _showBidBottomSheet(BuildContext context, ThemeData theme) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -165,7 +168,7 @@ class JobRequestDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Taklif yuborish',
+                l10n.homeRequestBidSheetTitle,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -174,7 +177,7 @@ class JobRequestDetailScreen extends StatelessWidget {
               TextField(
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  hintText: 'Taklif narxi (so\'m)',
+                  hintText: l10n.homeRequestBidPriceHint,
                   prefixIcon: Icon(Icons.payments_outlined, size: 20.sp),
                   border: OutlineInputBorder(
                     borderRadius: AppSizes.borderRadius12,
@@ -185,7 +188,7 @@ class JobRequestDetailScreen extends StatelessWidget {
               TextField(
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: 'Qisqacha izoh yozing...',
+                  hintText: l10n.homeRequestBidCommentHint,
                   border: OutlineInputBorder(
                     borderRadius: AppSizes.borderRadius12,
                   ),
@@ -198,7 +201,7 @@ class JobRequestDetailScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text('Yuborish'),
+                  child: Text(l10n.homeRequestBidSend),
                 ),
               ),
             ],

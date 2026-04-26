@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:sayyor/features/authentification/presentation/screen/login.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
@@ -19,18 +18,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(centerTitle: true, title: Text("Register")),
+      appBar: AppBar(centerTitle: true, title: Text(l10n.registerTitle)),
       body: Padding(
         padding: AppSizes.padding20,
         child: Column(
           children: [
             Image.asset(ImagesUrls.logo),
-            TextFormField(decoration: InputDecoration(hintText: "Email")),
+            TextFormField(
+              decoration: InputDecoration(hintText: l10n.registerEmailHint),
+            ),
             AppSizes.gH12,
             TextFormField(
               decoration: InputDecoration(
-                hintText: "New Parol",
+                hintText: l10n.registerPasswordHint,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -50,7 +52,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             AppSizes.gH16,
             TextFormField(
               decoration: InputDecoration(
-                hintText: "Repeat Parol",
+                hintText: l10n.registerRepeatPasswordHint,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -79,14 +81,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   borderRadius: AppSizes.borderRadius16,
                 ),
               ),
-              child: Text("Register"),
+              child: Text(l10n.registerButton),
             ),
             AppSizes.gH24,
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Do you have account?",
+                  l10n.registerHaveAccount,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(color: AppColors.kGray600),
@@ -97,7 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Navigator.pop(context);
                   },
                   child: Text(
-                    "Login",
+                    l10n.registerLogin,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.kPrimaryDark,
                     ),

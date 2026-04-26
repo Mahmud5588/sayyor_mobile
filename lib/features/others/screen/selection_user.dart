@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sayyor/core/di/service_locator.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/storage/localstorage.dart';
 import 'package:sayyor/core/themes/app_sizes.dart';
 import 'package:sayyor/features/authentification/presentation/screen/login.dart';
@@ -46,6 +47,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -66,7 +68,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
             children: [
               // 1. SARLAVHA VA TAVSIF
               Text(
-                "Ilovadan qanday maqsadda foydalanasiz?",
+                l10n.roleSelectionTitle,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   height: 1.3,
@@ -74,7 +76,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               ),
               AppSizes.gH12,
               Text(
-                "O'zingizga mos rolni tanlang. Buni keyinchalik sozlamalar orqali o'zgartirishingiz mumkin.",
+                l10n.roleSelectionSubtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.outline,
                   height: 1.5,
@@ -86,9 +88,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               _buildRoleCard(
                 theme: theme,
                 role: UserRole.client,
-                title: "Mijoz",
-                description:
-                    "Ustalar xizmatidan foydalanish, e'lon berish va mutaxassis yollash uchun.",
+                title: l10n.roleClientTitle,
+                description: l10n.roleClientDescription,
                 icon: Icons.person_search_outlined,
               ),
               AppSizes.gH16,
@@ -97,9 +98,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               _buildRoleCard(
                 theme: theme,
                 role: UserRole.master,
-                title: "Usta (Mutaxassis)",
-                description:
-                    "Buyurtmalar olish, xizmat ko'rsatish va daromad topish uchun.",
+                title: l10n.roleMasterTitle,
+                description: l10n.roleMasterDescription,
                 icon: Icons.handyman_outlined,
               ),
 
@@ -112,18 +112,18 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   onPressed: _selectedRole == UserRole.none
                       ? null // Agar rol tanlanmagan bo'lsa, tugma ishlamaydi (disabled)
                       : () async {
+                          final navigator = Navigator.of(context);
                           await _localStorage.setUserSelection(
                             _selectedRole.name,
                           );
                           if (!mounted) return;
-                          Navigator.pushReplacement(
-                            context,
+                          navigator.pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => const LoginScreen(),
                             ),
                           );
                         },
-                  child: const Text("Davom etish"),
+                  child: Text(l10n.continueButton),
                 ),
               ),
               AppSizes.gH16,
@@ -158,19 +158,19 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
           // Tanlangan bo'lsa apelsin fon, aks holda standart fon
           color: isSelected
               ? theme.colorScheme.primaryContainer
-              : theme.colorScheme.surface,
+              : theme.colorScheme.surfaceContainerHighest,
           borderRadius: AppSizes.borderRadius16,
           border: Border.all(
             // Tanlangan bo'lsa qalinroq va apelsin chiziq
             color: isSelected
                 ? theme.colorScheme.primary
-                : theme.colorScheme.outline.withOpacity(0.2),
+                : theme.colorScheme.outline.withValues(alpha: 0.2),
             width: isSelected ? 2.w : 1.w,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.15),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
                     blurRadius: 15.r,
                     offset: Offset(0, 8.h),
                   ),
@@ -185,7 +185,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.surfaceVariant,
+                    : theme.colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Icon(

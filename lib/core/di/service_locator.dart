@@ -11,6 +11,10 @@ import '../../features/authentification/domain/repository/auth_repository.dart';
 import '../../features/authentification/domain/usecase/send_otp_usecase.dart';
 import '../../features/authentification/domain/usecase/verify_otp_usecase.dart';
 import '../../features/authentification/presentation/bloc/auth_bloc.dart';
+import '../../features/chat/data/chat_mock_repository.dart';
+import '../../features/home/data/home_mock_repository.dart';
+import '../../features/profile/data/my_orders_mock_repository.dart';
+import '../../features/profile/data/profile_mock_repository.dart';
 import '../networks/dio_client.dart';
 import '../storage/localstorage.dart';
 import '../storage/token_storage.dart';
@@ -34,6 +38,10 @@ Future<void> init() async {
     () =>
         AuthRepositoryImpl(authRemoteDatasourceImpl: sl(), tokenStorage: sl()),
   );
+  sl.registerLazySingleton(() => HomeMockRepository());
+  sl.registerLazySingleton(() => ChatMockRepository());
+  sl.registerLazySingleton(() => ProfileMockRepository());
+  sl.registerLazySingleton(() => MyOrdersMockRepository());
   sl.registerLazySingleton(() => SendOtpUseCase(authRepository: sl()));
   sl.registerLazySingleton(() => VerifyOtpUseCase(authRepository: sl()));
   sl.registerLazySingleton(() => RefreshTokenUseCase(authRepository: sl()));

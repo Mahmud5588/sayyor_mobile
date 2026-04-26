@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sayyor/core/l10n/app_localizations.dart';
 import 'package:sayyor/core/themes/app_sizes.dart';
-import 'package:sayyor/core/themes/app_colors.dart';
 
 class JobRequestCard extends StatelessWidget {
   final String userName;
@@ -30,6 +30,7 @@ class JobRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return InkWell(
       onTap: onTap,
@@ -45,13 +46,13 @@ class JobRequestCard extends StatelessWidget {
           borderRadius: AppSizes.borderRadius16,
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.shadow.withOpacity(0.05),
+              color: theme.colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 10.r,
               offset: Offset(0, 4.h),
             ),
           ],
           border: AppSizes.borderAll(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
         child: Column(
@@ -96,7 +97,7 @@ class JobRequestCard extends StatelessWidget {
             Text(
               description,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.8),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                 height: 1.4,
               ),
               maxLines: 3,
@@ -140,8 +141,8 @@ class JobRequestCard extends StatelessWidget {
                       vertical: AppSizes.h8,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(
-                        0.5,
+                      color: theme.colorScheme.primaryContainer.withValues(
+                        alpha: 0.5,
                       ),
                       borderRadius: AppSizes.borderRadius8,
                     ),
@@ -174,7 +175,7 @@ class JobRequestCard extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: onBidTap,
                     icon: Icon(Icons.local_offer_outlined, size: 18.sp),
-                    label: const Text("Taklif yuborish"),
+                    label: Text(l10n.homeRequestBidButton),
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(0, 40.h), // Tugma balandligi
                       padding: EdgeInsets.symmetric(horizontal: AppSizes.w8),
@@ -193,7 +194,7 @@ class JobRequestCard extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: theme.colorScheme.outline.withOpacity(0.1),
+      color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
   }
 }
