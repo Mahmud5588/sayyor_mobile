@@ -10,6 +10,10 @@ import 'package:sayyor/core/themes/app_sizes.dart';
 import 'package:sayyor/core/widgets/app_async_state_view.dart';
 import 'package:sayyor/features/profile/data/profile_mock_repository.dart';
 import 'package:sayyor/features/profile/presentation/screen/my_orders_screen.dart';
+import 'package:sayyor/features/profile/presentation/screen/payment_methods_screen.dart';
+import 'package:sayyor/features/profile/presentation/screen/privacy_policy_screen.dart';
+import 'package:sayyor/features/profile/presentation/screen/saved_masters_screen.dart';
+import 'package:sayyor/features/profile/presentation/screen/support_center_screen.dart';
 import 'package:sayyor/features/others/screen/selection_user.dart';
 import 'package:sayyor/features/profile/presentation/bloc/locale/state.dart';
 import 'package:sayyor/features/profile/presentation/bloc/theme/state.dart';
@@ -122,15 +126,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       theme: theme,
                       icon: Icons.favorite_border_rounded,
                       title: l10n.profileSavedMastersTitle,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SavedMastersScreen(),
+                          ),
+                        );
+                      },
                     ),
                     _buildDivider(theme),
-                    _buildMenuItem(
-                      theme: theme,
-                      icon: Icons.account_balance_wallet_outlined,
-                      title: l10n.profilePaymentMethodsTitle,
-                      onTap: () {},
-                    ),
+                    // _buildMenuItem(
+                    //   theme: theme,
+                    //   icon: Icons.account_balance_wallet_outlined,
+                    //   title: l10n.profilePaymentMethodsTitle,
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (_) => const PaymentMethodsScreen(),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                   ],
                 ),
                 AppSizes.gH24,
@@ -206,14 +224,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       theme: theme,
                       icon: Icons.help_outline_rounded,
                       title: l10n.profileSupportTitle,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SupportCenterScreen(),
+                          ),
+                        );
+                      },
                     ),
                     _buildDivider(theme),
                     _buildMenuItem(
                       theme: theme,
                       icon: Icons.privacy_tip_outlined,
                       title: l10n.profilePrivacyTitle,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PrivacyPolicyScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

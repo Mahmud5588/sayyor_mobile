@@ -15,6 +15,7 @@ import '../../features/chat/data/chat_mock_repository.dart';
 import '../../features/home/data/home_mock_repository.dart';
 import '../../features/profile/data/my_orders_mock_repository.dart';
 import '../../features/profile/data/profile_mock_repository.dart';
+import '../../features/profile/data/saved_masters_mock_repository.dart';
 import '../networks/dio_client.dart';
 import '../storage/localstorage.dart';
 import '../storage/token_storage.dart';
@@ -42,6 +43,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => ChatMockRepository());
   sl.registerLazySingleton(() => ProfileMockRepository());
   sl.registerLazySingleton(() => MyOrdersMockRepository());
+  sl.registerLazySingleton(() => SavedMastersMockRepository());
   sl.registerLazySingleton(() => SendOtpUseCase(authRepository: sl()));
   sl.registerLazySingleton(() => VerifyOtpUseCase(authRepository: sl()));
   sl.registerLazySingleton(() => RefreshTokenUseCase(authRepository: sl()));

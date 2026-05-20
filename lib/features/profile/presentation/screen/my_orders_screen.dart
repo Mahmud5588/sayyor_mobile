@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sayyor/core/di/service_locator.dart';
 import 'package:sayyor/core/l10n/app_localizations.dart';
+import 'package:sayyor/core/storage/localstorage.dart';
 import 'package:sayyor/core/themes/app_colors.dart';
 import 'package:sayyor/core/themes/app_sizes.dart';
 import 'package:sayyor/core/widgets/app_async_state_view.dart';
@@ -17,9 +18,16 @@ class MyOrdersScreen extends StatefulWidget {
 
 class _MyOrdersScreenState extends State<MyOrdersScreen> {
   late Future<MyOrdersFeedData> _ordersFuture;
+  late final bool _isMasterMode;
   String? _loadedLocaleKey;
 
   final MyOrdersMockRepository _repository = sl<MyOrdersMockRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    _isMasterMode = sl<LocalStorage>().userSelection == 'master';
+  }
 
   @override
   void didChangeDependencies() {
@@ -72,51 +80,116 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
             );
           }
 
-          if (data.activeOrders.isEmpty && data.completedOrders.isEmpty) {
-            return AppAsyncStateView.empty(
-              l10n: l10n,
-              subtitle: l10n.myOrdersEmptySubtitle,
-            );
+          if (_isMasterMode) {
+            return _buildMasterBody(theme, l10n, data);
           }
-
-          return ListView(
-            padding: AppSizes.padding16,
-            children: [
-              if (data.activeOrders.isNotEmpty) ...[
-                _buildSectionHeader(theme, l10n.myOrdersActiveSection),
-                AppSizes.gH12,
-                ...data.activeOrders.map(
-                  (order) => Padding(
-                    padding: EdgeInsets.only(bottom: AppSizes.h16),
-                    child: _MyOrderCard(
-                      order: order,
-                      l10n: l10n,
-                      onChatTap: () => _openChat(order),
-                      onReviewTap: () => _editReview(order),
-                    ),
-                  ),
-                ),
-                AppSizes.gH8,
-              ],
-              if (data.completedOrders.isNotEmpty) ...[
-                _buildSectionHeader(theme, l10n.myOrdersCompletedSection),
-                AppSizes.gH12,
-                ...data.completedOrders.map(
-                  (order) => Padding(
-                    padding: EdgeInsets.only(bottom: AppSizes.h16),
-                    child: _MyOrderCard(
-                      order: order,
-                      l10n: l10n,
-                      onChatTap: () => _openChat(order),
-                      onReviewTap: () => _editReview(order),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          );
+          return _buildClientBody(theme, l10n, data);
         },
       ),
+    );
+  }
+
+  Widget _buildClientBody(
+    ThemeData theme,
+    AppLocalizations l10n,
+    MyOrdersFeedData data,
+  ) {
+    if (data.activeOrders.isEmpty && data.completedOrders.isEmpty) {
+      return AppAsyncStateView.empty(
+        l10n: l10n,
+        subtitle: l10n.myOrdersEmptySubtitle,
+      );
+    }
+
+    return ListView(
+      padding: AppSizes.padding16,
+      children: [
+        if (data.activeOrders.isNotEmpty) ...[
+          _buildSectionHeader(theme, l10n.myOrdersActiveSection),
+          AppSizes.gH12,
+          ...data.activeOrders.map(
+            (order) => Padding(
+              padding: EdgeInsets.only(bottom: AppSizes.h16),
+              child: _MyOrderCard(
+                order: order,
+                l10n: l10n,
+                onChatTap: () => _openChat(order),
+                onReviewTap: () => _editReview(order),
+              ),
+            ),
+          ),
+          AppSizes.gH8,
+        ],
+        if (data.completedOrders.isNotEmpty) ...[
+          _buildSectionHeader(theme, l10n.myOrdersCompletedSection),
+          AppSizes.gH12,
+          ...data.completedOrders.map(
+            (order) => Padding(
+              padding: EdgeInsets.only(bottom: AppSizes.h16),
+              child: _MyOrderCard(
+                order: order,
+                l10n: l10n,
+                onChatTap: () => _openChat(order),
+                onReviewTap: () => _editReview(order),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMasterBody(
+    ThemeData theme,
+    AppLocalizations l10n,
+    MyOrdersFeedData data,
+  ) {
+    final hasData =
+        data.providedServices.isNotEmpty || data.usedMasterServices.isNotEmpty;
+
+    if (!hasData) {
+      return AppAsyncStateView.empty(
+        l10n: l10n,
+        subtitle: l10n.myOrdersEmptySubtitle,
+      );
+    }
+
+    return ListView(
+      padding: AppSizes.padding16,
+      children: [
+        _MasterEarningsPanel(
+          timeline: data.earningsTimeline,
+          totalCompleted: data.providedServices.length,
+        ),
+        AppSizes.gH20,
+        _buildSectionHeader(theme, 'Mening bajargan ishlarim'),
+        AppSizes.gH12,
+        ...data.providedServices.map(
+          (order) => Padding(
+            padding: EdgeInsets.only(bottom: AppSizes.h16),
+            child: _MyOrderCard(
+              order: order,
+              l10n: l10n,
+              onChatTap: () => _openChat(order),
+              onReviewTap: null,
+            ),
+          ),
+        ),
+        AppSizes.gH8,
+        _buildSectionHeader(theme, 'Men foydalangan xizmatlar'),
+        AppSizes.gH12,
+        ...data.usedMasterServices.map(
+          (order) => Padding(
+            padding: EdgeInsets.only(bottom: AppSizes.h16),
+            child: _MyOrderCard(
+              order: order,
+              l10n: l10n,
+              onChatTap: () => _openChat(order),
+              onReviewTap: () => _editReview(order),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -131,12 +204,19 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
   }
 
   void _openChat(MyOrderData order) {
+    final displayName = order.isAsMaster
+        ? order.customerName
+        : order.masterName;
+    final displayAvatar = order.isAsMaster
+        ? order.customerAvatarUrl
+        : order.masterAvatarUrl;
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ChatDetailScreen(
-          masterName: order.masterName,
-          imageUrl: order.masterAvatarUrl,
+          masterName: displayName,
+          imageUrl: displayAvatar,
           isNewChat: false,
         ),
       ),
@@ -164,27 +244,26 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     setState(() {
       final current = _ordersFuture;
       _ordersFuture = current.then((feed) {
-        final updatedCompleted = feed.completedOrders.map((item) {
-          if (item.id != order.id) {
-            return item;
-          }
-          return item.copyWith(
-            review: MyOrderReviewData(rating: result.rating, text: result.text),
-          );
-        }).toList();
-
-        final updatedActive = feed.activeOrders.map((item) {
-          if (item.id != order.id) {
-            return item;
-          }
-          return item.copyWith(
-            review: MyOrderReviewData(rating: result.rating, text: result.text),
-          );
-        }).toList();
+        List<MyOrderData> updateReviews(List<MyOrderData> source) {
+          return source.map((item) {
+            if (item.id != order.id) {
+              return item;
+            }
+            return item.copyWith(
+              review: MyOrderReviewData(
+                rating: result.rating,
+                text: result.text,
+              ),
+            );
+          }).toList();
+        }
 
         return MyOrdersFeedData(
-          activeOrders: updatedActive,
-          completedOrders: updatedCompleted,
+          activeOrders: updateReviews(feed.activeOrders),
+          completedOrders: updateReviews(feed.completedOrders),
+          providedServices: updateReviews(feed.providedServices),
+          usedMasterServices: updateReviews(feed.usedMasterServices),
+          earningsTimeline: feed.earningsTimeline,
         );
       });
     });
@@ -195,7 +274,7 @@ class _MyOrderCard extends StatelessWidget {
   final MyOrderData order;
   final AppLocalizations l10n;
   final VoidCallback onChatTap;
-  final VoidCallback onReviewTap;
+  final VoidCallback? onReviewTap;
 
   const _MyOrderCard({
     required this.order,
@@ -208,6 +287,16 @@ class _MyOrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final review = order.review;
+    final showReviewBlock = onReviewTap != null;
+    final displayName = order.isAsMaster
+        ? order.customerName
+        : order.masterName;
+    final displayAvatar = order.isAsMaster
+        ? order.customerAvatarUrl
+        : order.masterAvatarUrl;
+    final counterpartLabel = order.isAsMaster
+        ? l10n.roleClientTitle
+        : l10n.myOrdersMasterLabel;
 
     return Container(
       padding: AppSizes.padding16,
@@ -233,7 +322,7 @@ class _MyOrderCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24.r,
-                backgroundImage: NetworkImage(order.masterAvatarUrl),
+                backgroundImage: NetworkImage(displayAvatar),
               ),
               AppSizes.gW12,
               Expanded(
@@ -244,7 +333,7 @@ class _MyOrderCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            order.masterName,
+                            displayName,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
@@ -301,10 +390,7 @@ class _MyOrderCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _InfoPill(
-                  label: l10n.myOrdersMasterLabel,
-                  value: order.masterName,
-                ),
+                child: _InfoPill(label: counterpartLabel, value: displayName),
               ),
               AppSizes.gW8,
               Expanded(
@@ -345,73 +431,75 @@ class _MyOrderCard extends StatelessWidget {
               ),
             ],
           ),
-          AppSizes.gH16,
-          Container(
-            width: double.infinity,
-            padding: AppSizes.padding12,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(
-                alpha: 0.45,
+          if (showReviewBlock) ...[
+            AppSizes.gH16,
+            Container(
+              width: double.infinity,
+              padding: AppSizes.padding12,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.45,
+                ),
+                borderRadius: AppSizes.borderRadius16,
               ),
-              borderRadius: AppSizes.borderRadius16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      l10n.myOrdersReviewTitle,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        l10n.myOrdersReviewTitle,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: onReviewTap,
+                        icon: Icon(
+                          review == null
+                              ? Icons.rate_review_outlined
+                              : Icons.edit_outlined,
+                          size: 18.sp,
+                        ),
+                        label: Text(
+                          review == null
+                              ? l10n.myOrdersReviewWrite
+                              : l10n.myOrdersReviewEdit,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (review != null) ...[
+                    Row(
+                      children: List.generate(
+                        5,
+                        (index) => Icon(
+                          index < review.rating.round()
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: Colors.amber,
+                          size: 18.sp,
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: onReviewTap,
-                      icon: Icon(
-                        review == null
-                            ? Icons.rate_review_outlined
-                            : Icons.edit_outlined,
-                        size: 18.sp,
-                      ),
-                      label: Text(
-                        review == null
-                            ? l10n.myOrdersReviewWrite
-                            : l10n.myOrdersReviewEdit,
+                    AppSizes.gH8,
+                    Text(
+                      review.text,
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.45),
+                    ),
+                  ] else ...[
+                    Text(
+                      l10n.myOrdersNoReviewText,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
-                ),
-                if (review != null) ...[
-                  Row(
-                    children: List.generate(
-                      5,
-                      (index) => Icon(
-                        index < review.rating.round()
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: Colors.amber,
-                        size: 18.sp,
-                      ),
-                    ),
-                  ),
-                  AppSizes.gH8,
-                  Text(
-                    review.text,
-                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.45),
-                  ),
-                ] else ...[
-                  Text(
-                    l10n.myOrdersNoReviewText,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
                 ],
-              ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -439,6 +527,190 @@ class _InfoPill extends StatelessWidget {
         children: [
           Text(
             label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+          AppSizes.gH4,
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MasterEarningsPanel extends StatelessWidget {
+  final List<MasterEarningPointData> timeline;
+  final int totalCompleted;
+
+  const _MasterEarningsPanel({
+    required this.timeline,
+    required this.totalCompleted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final totalAmount = timeline.fold<int>(0, (sum, item) => sum + item.amount);
+
+    return Container(
+      padding: AppSizes.padding16,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: AppSizes.borderRadius20,
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.16),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Daromad statistikasi',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          AppSizes.gH4,
+          Text(
+            'Vaqt kesimida ishlagan pulingiz',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          AppSizes.gH16,
+          _EarningsBarChart(data: timeline),
+          AppSizes.gH16,
+          Row(
+            children: [
+              Expanded(
+                child: _EarningStatPill(
+                  title: 'Jami daromad',
+                  value: '${_formatAmount(totalAmount)} so\'m',
+                ),
+              ),
+              AppSizes.gW8,
+              Expanded(
+                child: _EarningStatPill(
+                  title: 'Yakunlangan ishlar',
+                  value: '$totalCompleted ta',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatAmount(int amount) {
+    final source = amount.toString();
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < source.length; i++) {
+      final reverseIndex = source.length - i;
+      buffer.write(source[i]);
+      if (reverseIndex > 1 && reverseIndex % 3 == 1) {
+        buffer.write(',');
+      }
+    }
+    return buffer.toString();
+  }
+}
+
+class _EarningsBarChart extends StatelessWidget {
+  final List<MasterEarningPointData> data;
+
+  const _EarningsBarChart({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final maxValue = data.isEmpty
+        ? 1
+        : data.map((item) => item.amount).reduce((a, b) => a > b ? a : b);
+
+    return SizedBox(
+      height: 120.h,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: data
+            .map(
+              (point) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSizes.w4),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: FractionallySizedBox(
+                            heightFactor: point.amount / maxValue,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: AppSizes.borderRadius8,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    theme.colorScheme.primary.withValues(
+                                      alpha: 0.45,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      AppSizes.gH8,
+                      Text(
+                        point.periodLabel,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _EarningStatPill extends StatelessWidget {
+  final String title;
+  final String value;
+
+  const _EarningStatPill({required this.title, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: AppSizes.padding12,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+        borderRadius: AppSizes.borderRadius16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onPrimaryContainer,
             ),
